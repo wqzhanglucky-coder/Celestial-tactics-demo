@@ -1,60 +1,84 @@
-# Celestial Tactics Demo
+# 🎮 Celestial Tactics Demo
 
-A small anime-inspired turn-based tactics prototype built as a portfolio project for game and AI-focused studios.
+An anime-inspired turn-based tactics prototype built as a portfolio project for AI + game studios.
 
-## Live Demo
-Open `index.html` locally, or deploy this repository with GitHub Pages.
+👉 **Live Demo:**  
+https://wqzhanglucky-coder.github.io/Celestial-tactics-demo/
 
-## What this project shows
-- Turn-based tactics core loop: select, move, attack, enemy phase
-- Character-first presentation with portrait panel and character cards
-- Pixel-style portraits with a cute, light, anime-inspired tone
-- Dynamic dialogue mode for battle flavor
-- Mid-battle item drops that change tactical decisions
-- Lightweight audio feedback, BGM, hit reactions, and victory fanfare
-- Single-file deployment that is easy to review and share
+---
 
-## Controls
-- Click a blue unit to select it
-- Click a highlighted tile to move
-- Click an enemy in range to attack
-- Use the skill buttons on the right during the attack phase
-- Pick up:
-  - 💖 Full Heart: restores full HP
-  - 🧪 Poison Flask: click an enemy to cut its current HP by 50%
+## ✨ Overview
 
-## Why I built this
-I wanted to make a compact but polished tactics demo that combines:
-- anime-inspired character appeal
-- readable tactical gameplay
-- lightweight dynamic dialogue
-- strong presentation for a portfolio / job application
+This project explores the combination of:
 
-This project was built to demonstrate that I can turn a game idea into a playable prototype and iterate on presentation, mechanics, and player feedback.
+- Turn-based tactics gameplay (Fire Emblem-style loop)
+- Anime-inspired UI and tone
+- Lightweight AI-style dialogue system
+- Clean, self-contained web deployment
 
-## Files
-- `index.html` — complete playable build
+The goal is to demonstrate both **game design thinking** and **technical execution** in a compact, playable format.
 
-## Suggested GitHub Pages setup
-1. Create a new GitHub repository
-2. Upload all files in this folder
-3. In the repository, go to **Settings → Pages**
-4. Set the source to deploy from the main branch
-5. GitHub Pages will generate a public URL for this demo
+---
 
-## Suggested screenshots
-Add a `screenshots/` folder later with:
-- battle screen
-- portrait/dialogue screen
-- item drop screen
-- victory screen
+## 🎯 Key Features
 
-## Resume / application one-liner
-Built a small anime-inspired turn-based tactics prototype featuring dynamic dialogue, pixel portraits, item drops, ranged combat, and polished UI presentation.
+- ⚔️ Turn-based combat system (player phase / enemy phase)
+- 🧠 AI Dialogue Mode (context-aware character lines)
+- 🎨 Pixel-style character portraits (anime-inspired)
+- 🎵 Background music + battle sound effects
+- 🎁 Item system (heal + poison mechanics)
+- 🧩 Tactical decisions (skills, positioning, timing)
 
-## Notes
-All portraits and assets in this demo are original and portfolio-safe.
+---
 
-## 🎮 Live Demo
+## 🕹️ How to Play
 
-Play here:  https://wqzhanglucky-coder.github.io/Celestial-tactics-demo/
+1. Open the Live Demo link above  
+2. Use action buttons:
+   - Attack
+   - Magic
+   - Heal
+   - Defend
+3. Manage HP / MP and defeat the enemy
+
+---
+
+## 🧠 Design Intent
+
+This prototype is designed to explore:
+
+- How AI-generated dialogue can enhance gameplay immersion  
+- How minimal UI can still deliver strong character identity  
+- How lightweight web tech can quickly prototype game ideas  
+
+---
+
+## 🛠️ Tech Stack
+
+- HTML / CSS / JavaScript (single-file architecture)
+- No external dependencies
+- GitHub Pages for deployment
+
+---
+
+## 🚀 Why This Project
+
+I have long-term experience with turn-based tactics games and anime-style storytelling.  
+This project reflects my interest in:
+
+- AI + creative tools
+- Game design systems
+- Interactive storytelling
+
+---
+
+## 📌 Notes
+
+- Built as a fast prototype for demonstration purposes  
+- Designed to be easily expandable (multi-character, grid system, etc.)
+
+---
+
+## 👤 Author
+
+Wenqiang Zhang  
