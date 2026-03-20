@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Celestial Tactics Demo — Pixel Item Edition</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,Arial,sans-serif;color:#44345f;
+  background:
+    radial-gradient(circle at top left,#fff7d6 0%,rgba(255,247,214,.9) 18%,transparent 40%),
+    radial-gradient(circle at top right,#ffd7ef 0%,rgba(255,215,239,.9) 18%,transparent 42%),
+    linear-gradient(180deg,#fffaf2 0%,#f8f4ff 45%,#eef8ff 100%);
+}
+.app{max-width:1360px;margin:0 auto;padding:20px}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0;font-size:38px;color:#6d4bc3}
+.subtitle{color:#7c6f9d;margin-top:8px;line-height:1.55;max-width:920px}
+.badge{border:1px solid #e8d9ff;background:#f5eeff;color:#6d4bc3;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700}
+.btn{border:1px solid #eadcfb;background:#fff;color:#6d4bc3;border-radius:18px;padding:12px 16px;cursor:pointer;transition:.18s ease;font-size:14px;font-weight:700;box-shadow:0 6px 14px rgba(176,148,234,.14)}
+.btn:hover{background:#fff7ff;transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#ffeff8,#fff7d6);color:#7b4ea3}
+.layout{display:grid;grid-template-columns:320px 1fr 330px;gap:20px}
+.panel{background:rgba(255,255,255,.82);border:1px solid rgba(231,217,255,.95);border-radius:28px;box-shadow:0 18px 40px rgba(183,160,228,.18);overflow:hidden;backdrop-filter:blur(10px)}
+.panel h2{margin:0;font-size:22px;color:#7752c6}.panel-header{padding:18px 20px 0}.panel-body{padding:18px 20px 20px}
+.portrait-card,.card-lite{border-radius:24px;padding:18px;background:linear-gradient(180deg,rgba(255,240,247,.95),rgba(246,241,255,.95));border:1px solid #eadcfb}
+.portrait-frame{aspect-ratio:3/4;border-radius:24px;background:linear-gradient(135deg,#fff7d6,#ffe5f3 55%,#e9f6ff);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 18px rgba(255,255,255,.5)}
+.portrait-frame img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;filter:saturate(1.06) contrast(1.02)}
+.speaker-line{margin-top:14px;min-height:98px;padding:14px;border-radius:20px;border:1px solid #eadcfb;background:#fff;line-height:1.7;color:#5f527e}
+.battlefield{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:620px;margin:0 auto}
+.tile{aspect-ratio:1/1;border-radius:18px;border:1px solid #e9ddfb;position:relative;overflow:hidden;cursor:pointer;transition:.18s ease;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(180deg,#ffffff,#f8f5ff)}
+.tile:nth-child(odd){background:linear-gradient(180deg,#fffefb,#f7fbff)}
+.tile:hover{transform:translateY(-1px)}
+.tile.selected{box-shadow:0 0 0 2px #ffd25f;border-color:#ffd25f}
+.tile.movable{box-shadow:0 0 0 2px #79dff3}
+.tile.attackable{box-shadow:0 0 0 2px #ff9aba}
+.tile.itemtile{box-shadow:0 0 0 2px #9ee08f}
+.tile::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.28),transparent);pointer-events:none}
+.unit{z-index:1;position:relative;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;padding:4px;width:100%;height:100%}
+.token{width:44px;height:44px;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.95);box-shadow:0 6px 12px rgba(190,164,234,.2);background:#fff}
+.token img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.unit .name{font-size:12px;font-weight:800}.unit .hp{font-size:11px;color:#7c6f9d}
+.unit.player .name{color:#4aa3c2}.unit.enemy .name{color:#d66c94}.done{font-size:10px;color:#b3aac6}
+.legend{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:13px}
+.legend div{border-radius:18px;padding:12px 14px;border:1px solid #eadcfb}
+.cyan{background:#eefcff;color:#4aa3c2}.rose{background:#fff0f6;color:#d66c94}.gold{background:#fff9dd;color:#a97c00}.violet{background:#f4f0ff;color:#7e67c2}
+.info{margin-top:16px;text-align:center;color:#7c6f9d;font-size:14px}
+.skill-list,.log-list,.unit-list{display:grid;gap:10px}
+.skill-btn{width:100%;text-align:left;padding:14px 16px;border-radius:18px;border:1px solid #eadcfb;background:#fff;color:#6d4bc3;cursor:pointer;transition:.18s ease;font-size:14px;font-weight:700}
+.skill-btn:hover:not(:disabled){background:#fff7ff}.skill-btn:disabled{opacity:.45;cursor:not-allowed}
+.log-entry,.unit-card,.stage-card,.char-card{border-radius:18px;border:1px solid #eadcfb;background:rgba(255,255,255,.95);padding:12px 14px}
+.unit-top,.char-top{display:flex;justify-content:space-between;align-items:start;gap:8px}.small{font-size:12px;color:#8e83ab}
+.bar{margin-top:10px;height:8px;border-radius:999px;background:#ece7f7;overflow:hidden}.fill-player,.fill-enemy{height:100%;border-radius:999px}
+.fill-player{background:linear-gradient(90deg,#79dff3,#4aa3c2)}.fill-enemy{background:linear-gradient(90deg,#ffb0c9,#d66c94)}
+.overlay{position:fixed;inset:0;background:rgba(255,245,252,.75);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.modal{width:100%;max-width:500px;border-radius:28px;background:#fff;border:1px solid #eadcfb;text-align:center;padding:34px 22px;box-shadow:0 20px 50px rgba(183,160,228,.26)}
+.modal .icon{font-size:64px}.modal h3{font-size:34px;margin:12px 0 0;color:#7b4ea3}.modal p{color:#8e83ab}
+.fx{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;font-size:70px;filter:drop-shadow(0 0 22px rgba(255,255,255,.65))}
+.fx.show{display:flex;animation:pop .28s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1.08);opacity:1}}
+.shake{animation:shake .28s ease}.pulse{animation:pulse .32s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes pulse{0%{transform:scale(.95);opacity:.8}100%{transform:scale(1.05);opacity:1}}
+.note{font-size:12px;opacity:.78;line-height:1.55}.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#faf7ff;font-size:12px;border:1px solid #eadcfb;color:#7c6f9d}
+@media (max-width:1100px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+@media (max-width:700px){h1{font-size:32px}.legend{grid-template-columns:1fr}.battlefield{gap:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <h1>Celestial Tactics Demo — Pixel Item Edition</h1>
+      <div class="subtitle">Added mid-battle item drops for stronger tactical swings: one full-heal pickup and one poison flask that cuts an enemy’s current HP by 50%.</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div class="badge" id="phaseBadge">Player Phase</div>
+      <button class="btn primary" id="restartBtn">Restart Battle</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div style="display:grid;gap:20px;">
+      <div class="panel">
+        <div class="panel-header"><h2>Character Portrait</h2></div>
+        <div class="panel-body">
+          <div class="portrait-card">
+            <div class="portrait-frame" id="portraitFrame"><img id="portraitImg" alt="portrait"></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:start;margin-top:14px;">
+              <div>
+                <div style="font-size:28px;font-weight:700;" id="portraitName">Narrator</div>
+                <div class="small" id="portraitClass">Battle Commentary</div>
+              </div>
+              <div class="badge" id="portraitTag" style="display:none;">Selected</div>
+            </div>
+            <div class="speaker-line" id="dialogueBox">The skirmish begins.</div>
+            <div class="controls">
+              <button class="btn" id="toggleBgm">Start BGM</button>
+              <button class="btn" id="toggleMute">Sound On</button>
+              <button class="btn" id="toggleAi">AI Dialogue: On</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Stage Briefing</h2></div>
+        <div class="panel-body">
+          <div class="stage-card">
+            <div style="font-weight:700;font-size:18px;margin-bottom:6px;color:#7b4ea3">Moonlit Relay Ruins</div>
+            <div class="small" style="line-height:1.6;">Crystal debris blocks paths, and now mysterious support items can drop in the middle of battle. Short map, bigger swings.</div>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+              <span class="pill">Full-heal drop</span>
+              <span class="pill">Poison flask</span>
+              <span class="pill">Cute pixel animals</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Character Cards</h2></div>
+        <div class="panel-body">
+          <div class="grid2" id="charCards"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Battlefield</h2></div>
+      <div class="panel-body">
+        <div class="battlefield" id="battlefield"></div>
+        <div class="legend">
+          <div class="cyan">Move highlight</div>
+          <div class="rose">Attack highlight</div>
+          <div class="gold">Selected unit</div>
+          <div class="violet">Items & obstacles</div>
+        </div>
+        <div class="info" id="phaseInfo">Choose a blue unit to begin.</div>
+        <div class="info note">Green-highlighted tiles contain drops. Heart = full heal. Flask = pick it up, then click an enemy to cut their current HP by 50%.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:20px;">
+      <div class="panel">
+        <div class="panel-header"><h2>Skills & Items</h2></div>
+        <div class="panel-body">
+          <div class="skill-list">
+            <button class="skill-btn" id="skillNova">✨ Star Nova</button>
+            <button class="skill-btn" id="skillHeal">💚 Heal Pulse</button>
+            <button class="skill-btn" id="skillSnipe">🏹 Moonshot Snipe</button>
+            <button class="skill-btn" id="skillPower">⚔️ Power Strike</button>
+            <button class="skill-btn" id="endAction">🪄 End Action</button>
+          </div>
+          <div class="small" id="inventoryText" style="margin-top:12px;line-height:1.6">Inventory: none</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Units</h2></div>
+        <div class="panel-body"><div class="unit-list" id="unitList"></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Battle Log</h2></div>
+        <div class="panel-body"><div class="log-list" id="logList"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fx" id="fxLayer">⚔️</div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="icon" id="modalIcon">🏆</div>
+    <h3 id="modalTitle">Victory</h3>
+    <p id="modalText">Your squad held the line.</p>
+    <button class="btn primary" id="playAgain">Play Again</button>
+  </div>
+</div>
+
+<script>
+function pixelAnimal(main,bg,ear,eye,accent){
+  const s = `
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' shape-rendering='crispEdges'>
+    <rect width='24' height='24' fill='${bg}'/>
+    <rect x='7' y='2' width='3' height='4' fill='${ear}'/><rect x='14' y='2' width='3' height='4' fill='${ear}'/>
+    <rect x='5' y='6' width='14' height='11' fill='${main}'/>
+    <rect x='6' y='17' width='12' height='3' fill='${main}'/>
+    <rect x='8' y='10' width='2' height='2' fill='${eye}'/><rect x='14' y='10' width='2' height='2' fill='${eye}'/>
+    <rect x='11' y='13' width='2' height='2' fill='${accent}'/>
+    <rect x='9' y='15' width='6' height='1' fill='${accent}'/>
+    <rect x='4' y='8' width='1' height='5' fill='${main}'/><rect x='19' y='8' width='1' height='5' fill='${main}'/>
+  </svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(s);
+}
+const portraits = {
+  aria: pixelAnimal("#ffd2eb","#fff7d6","#ffb6d9","#3b82f6","#f59e0b"),   // bunny
+  leon: pixelAnimal("#c9efff","#fff1c9","#8ed7ff","#334155","#fbbf24"),   // fox
+  shade: pixelAnimal("#dcc8ff","#eef8ff","#a78bfa","#312e81","#06b6d4"),  // cat
+  drake: pixelAnimal("#ffc7ba","#fff3d6","#ff9b8e","#7c2d12","#f97316"),  // lion cub
+  narrator: pixelAnimal("#eadbff","#fff0fb","#d7b5ff","#6d4bc3","#ec4899")
+};
+const aiLines = {
+  aria:{attack:["Boing~ sparkle hit!","Tiny bunny magic incoming!","Hop-hop boom!"],low:["Still fluffy, still fighting.","Wobble... but not done!","Aah, that hurt a lot."],win:["Yatta~ bunny victory!","We did it, yay!","That was super cute and super brave."],skill:["Starlight bunny burst!","Twinkle hop, go!","Healing hugs, activate!"]},
+  leon:{attack:["Foxy shot, right on target.","Neat and tidy.","Pew~ got it."],low:["Still okay... mostly.","Need a cleaner angle.","Not pretty, but manageable."],win:["Mission complete.","That was a smooth finish.","Good work, team."],skill:["Moonshot, nice and easy.","A little stylish finish.","Arrow out."]},
+  shade:{attack:["Mrr. Too slow.","Quiet now.","Scratch."],low:["Tch. Rude.","I'm not done.","You really hit hard."],win:["All that noise for nothing.","Cute. Still lost.","Silence wins."],skill:["Slip into shadow.","No one saw that.","Gone."]},
+  drake:{attack:["Roar~ here I go!","Bonk!","Too slow, heroes."],low:["Grr... still fierce.","You'll pay for that.","Not done yet!"],win:["Heh, easy.","I said I'd win.","Too much firepower."],skill:["Big claw energy!","Let's make it loud!","Charge!"]}
+};
+const SIZE=6, dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+const terrain=[{x:2,y:2,kind:"crystal"},{x:3,y:2,kind:"crystal"},{x:1,y:1,kind:"pillar"},{x:4,y:4,kind:"ruin"}];
+const initialUnits=[
+{id:"p1",team:"player",name:"Aria",cls:"Star Bunny Mage",portrait:"aria",hp:18,maxHp:18,atk:5,move:2,range:1,x:0,y:4,acted:false,guard:false,power:false,quotes:{select:"The stars are with us.",attack:"A spark is enough.",skill:"Light, answer me!",hurt:"I can still fight..."},skills:["nova","heal"],bio:"A bunny-like star mage with cheerful burst magic."},
+{id:"p2",team:"player",name:"Leon",cls:"Moon Fox Ranger",portrait:"leon",hp:20,maxHp:20,atk:5,move:2,range:2,x:1,y:5,acted:false,guard:false,power:false,quotes:{select:"Target acquired.",attack:"Right through.",skill:"Moonshot, fly.",hurt:"Still standing."},skills:["snipe","power"],bio:"A neat fox ranger with calm aim and bright utility."},
+{id:"e1",team:"enemy",name:"Shade",cls:"Night Catblade",portrait:"shade",hp:15,maxHp:15,atk:5,move:2,range:1,x:4,y:1,acted:false,guard:false,power:false,quotes:{select:"...",attack:"Disappear.",skill:"Darkness devours.",hurt:"Tch."},skills:["poison"],bio:"A cat-like ambusher who likes silent pressure."},
+{id:"e2",team:"enemy",name:"Drake",cls:"Crimson Cub Lancer",portrait:"drake",hp:20,maxHp:20,atk:5,move:2,range:1,x:5,y:0,acted:false,guard:false,power:false,quotes:{select:"Forward.",attack:"Burn.",skill:"Crush them.",hurt:"You'll pay for that."},skills:["sweep"],bio:"A fiery cub lancer who rushes first and thinks later."}
+];
+let units,turn,selectedId,phase,logs,dialogue,winner,isMuted=false,bgmOn=false,aiMode=true,items=[],spawnStep=0,inventory={poison:false},awaitingPoisonTarget=false;
+const battlefield=document.getElementById("battlefield"),unitList=document.getElementById("unitList"),logList=document.getElementById("logList"),charCards=document.getElementById("charCards"),inventoryText=document.getElementById("inventoryText");
+const k=(x,y)=>`${x},${y}`,alive=(team,src=units)=>src.filter(u=>u.team===team&&u.hp>0),terrainAt=(x,y)=>terrain.find(t=>t.x===x&&t.y===y)||null,getUnitAt=(src,x,y)=>src.find(u=>u.hp>0&&u.x===x&&u.y===y),distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y),inBounds=(x,y)=>x>=0&&x<SIZE&&y>=0&&y<SIZE;
+let audioCtx=null,bgmTimer=null,bgmStep=0;
+function ensureAudio(){audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,dur=.12,type="triangle",gain=.05,start=0){if(isMuted)return;const ctx=ensureAudio(),o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,ctx.currentTime+start);g.gain.setValueAtTime(gain,ctx.currentTime+start);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+start+dur);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+dur+.02);}
+function beep(type="hit"){if(isMuted)return;if(type==="hit"){playTone(180,.12,"triangle",.06);playTone(110,.08,"square",.03,.04);}if(type==="heal"){playTone(340,.12,"sine",.05);playTone(520,.16,"sine",.03,.06);}if(type==="select"){playTone(540,.06,"triangle",.04);playTone(700,.08,"triangle",.03,.05);}if(type==="skill"){playTone(260,.08,"triangle",.05);playTone(420,.1,"triangle",.04,.06);playTone(700,.12,"sine",.03,.11);}if(type==="victory"){playTone(523,.12,"triangle",.05);playTone(659,.12,"triangle",.05,.14);playTone(784,.18,"triangle",.05,.28);}if(type==="item"){playTone(620,.08,"sine",.05);playTone(820,.1,"sine",.04,.08);}}
+function bgmTick(){if(!bgmOn||isMuted)return;const lead=[523,587,659,587,523,494,440,494],bass=[262,262,294,294,220,220,247,247];const lf=lead[bgmStep%lead.length],bf=bass[bgmStep%bass.length];playTone(lf,.20,"triangle",.02);playTone(bf,.22,"sine",.014,.02);if(bgmStep%2===1)playTone(lf*2,.08,"square",.008,.12);bgmStep++;bgmTimer=setTimeout(bgmTick,320);}
+function startBgm(){if(bgmOn)return;bgmOn=true;toggleBgm.textContent="Pause BGM";ensureAudio();bgmTick();}
+function stopBgm(){bgmOn=false;toggleBgm.textContent="Start BGM";if(bgmTimer)clearTimeout(bgmTimer);}
+function toggleMuteState(){isMuted=!isMuted;toggleMute.textContent=isMuted?"Sound Off":"Sound On";if(isMuted)stopBgm();}
+function pickLine(unit,mood){if(!aiMode||!unit)return null;const pool=aiLines[unit.portrait]?.[mood];return pool?pool[Math.floor(Math.random()*pool.length)]:null;}
+function itemAt(x,y){return items.find(it=>it.x===x&&it.y===y) || null;}
+function spawnItem(type){
+  const candidate = [{x:0,y:2},{x:5,y:3},{x:2,y:5},{x:3,y:0}].find(p=>!terrainAt(p.x,p.y)&&!getUnitAt(units,p.x,p.y)&&!itemAt(p.x,p.y));
+  if(candidate){items.push({...candidate,type});pushLog(type==="healFull"?"A Full Heart dropped!":"A Poison Flask dropped!");}
+}
+function maybeSpawnMidbattle(){
+  spawnStep++;
+  if(spawnStep===2 && !items.some(i=>i.type==="healFull")) spawnItem("healFull");
+  if(spawnStep===4 && !items.some(i=>i.type==="poisonHalf") && !inventory.poison) spawnItem("poisonHalf");
+}
+function reachableTiles(unit,src){const blocked=new Set(src.filter(u=>u.hp>0&&u.id!==unit.id).map(u=>k(u.x,u.y)));const q=[{x:unit.x,y:unit.y,d:0}],seen=new Set([k(unit.x,unit.y)]),out=[];while(q.length){const cur=q.shift();out.push(cur);for(const [dx,dy] of dirs){const nx=cur.x+dx,ny=cur.y+dy,nd=cur.d+1,keyy=k(nx,ny);if(!inBounds(nx,ny)||nd>unit.move||seen.has(keyy)||blocked.has(keyy)||terrainAt(nx,ny))continue;seen.add(keyy);q.push({x:nx,y:ny,d:nd});}}return out;}
+function attackableEnemies(unit,src,bonusRange=0){return src.filter(u=>u.hp>0&&u.team!==unit.team&&distance(unit,u)<=unit.range+bonusRange);}
+function nearestEnemy(unit,src){return src.filter(u=>u.hp>0&&u.team!==unit.team).sort((a,b)=>distance(unit,a)-distance(unit,b))[0];}
+function moveToward(unit,target,src){return reachableTiles(unit,src).filter(t=>!(t.x===unit.x&&t.y===unit.y)).sort((a,b)=>distance(a,target)-distance(b,target)||a.d-b.d)[0]||{x:unit.x,y:unit.y};}
+function say(unit,line,isSelected=false){dialogue={speaker:unit?.name||"Narrator",line,cls:unit?.cls||"Battle Commentary",portrait:portraits[unit?.portrait||"narrator"],selected:isSelected};renderDialogue();}
+function renderDialogue(){portraitImg.src=dialogue.portrait;portraitName.textContent=dialogue.speaker;portraitClass.textContent=dialogue.cls;dialogueBox.textContent=`“${dialogue.line}”`;portraitTag.style.display=dialogue.selected?"inline-block":"none";}
+function pushLog(text){logs=[text,...logs].slice(0,12);renderLogs();}
+function renderLogs(){logList.innerHTML="";logs.forEach(log=>{const d=document.createElement("div");d.className="log-entry";d.textContent=log;logList.appendChild(d);});}
+function renderCharCards(){charCards.innerHTML="";initialUnits.filter(u=>u.team==="player").forEach(u=>{const c=document.createElement("div");c.className="char-card";c.innerHTML=`<div class="char-top"><div style="display:flex;gap:10px;align-items:center;"><div class="token"><img src="${portraits[u.portrait]}"></div><div><div style="font-weight:700">${u.name}</div><div class="small">${u.cls}</div></div></div></div><div class="small" style="margin-top:10px;line-height:1.6">${u.bio}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;"><span class="pill">Move ${u.move}</span><span class="pill">Range ${u.range}</span><span class="pill">${u.skills.join(" / ")}</span></div>`;charCards.appendChild(c);});}
+function renderUnits(){unitList.innerHTML="";[...alive("player"),...alive("enemy")].forEach(u=>{const card=document.createElement("div");card.className="unit-card";card.innerHTML=`<div class="unit-top"><div style="display:flex;gap:10px;align-items:center;"><div class="token"><img src="${portraits[u.portrait]}"></div><div><div style="font-weight:700;color:${u.team==="player"?"#4aa3c2":"#d66c94"}">${u.name}</div><div class="small">${u.cls}</div></div></div><div class="badge" style="padding:5px 10px;font-size:12px;background:${u.team==="player"?"#eefcff":"#fff0f6"};border-color:${u.team==="player"?"#d8f6ff":"#ffdce8"}">${u.team}</div></div><div class="bar"><div class="${u.team==="player"?"fill-player":"fill-enemy"}" style="width:${(u.hp/u.maxHp)*100}%"></div></div><div class="small" style="margin-top:8px;display:flex;justify-content:space-between;"><span>HP ${u.hp}/${u.maxHp}</span><span>ATK ${u.atk+(u.power?2:0)}</span></div>`;unitList.appendChild(card);});inventoryText.textContent = awaitingPoisonTarget ? "Inventory: Poison Flask ready — click any enemy to halve their current HP." : (inventory.poison ? "Inventory: Poison Flask ready." : "Inventory: none");}
+function currentSelected(){return units.find(u=>u.id===selectedId&&u.hp>0)||null;}
+function movableSet(){const s=currentSelected();if(!s||phase!=="move")return new Set();return new Set(reachableTiles(s,units).filter(t=>!(t.x===s.x&&t.y===s.y)).map(t=>k(t.x,t.y)));}
+function attackSet(){const s=currentSelected();if(!s||phase!=="attack")return new Set();return new Set(attackableEnemies(s,units).map(u=>u.id));}
+function renderBoard(){battlefield.innerHTML="";const selected=currentSelected(),movable=movableSet(),attacks=attackSet();for(let y=0;y<SIZE;y++){for(let x=0;x<SIZE;x++){const tile=document.createElement("button");tile.className="tile";const unit=getUnitAt(units,x,y),terr=terrainAt(x,y),item=itemAt(x,y);if(selected&&unit&&unit.id===selected.id)tile.classList.add("selected");if(movable.has(k(x,y))&&!unit)tile.classList.add("movable");if(unit&&attacks.has(unit.id))tile.classList.add("attackable");if(item)tile.classList.add("itemtile");if(unit){tile.innerHTML=`<div class="unit ${unit.team}" id="unit-${unit.id}"><div class="token"><img src="${portraits[unit.portrait]}"></div><div class="name">${unit.name}</div><div class="hp">HP ${unit.hp}</div>${unit.acted&&unit.team==="player"?`<div class="done">Done</div>`:``}</div>`;}else if(item){tile.innerHTML=`<div style="position:relative;z-index:1;font-size:28px">${item.type==="healFull"?"💖":"🧪"}</div>`;}else if(terr){tile.innerHTML=`<div style="position:relative;z-index:1;font-size:28px">${terr.kind==="crystal"?"💎":terr.kind==="pillar"?"🗿":"🏛️"}</div>`;}else{tile.innerHTML=`<div style="color:#c5bbd9;font-size:11px;position:relative;z-index:1">${x+1},${y+1}</div>`;}tile.addEventListener("click",()=>onTileClick(x,y));battlefield.appendChild(tile);}}}
+function renderPhase(){phaseBadge.textContent=winner?(winner==="player"?"Victory":"Defeat"):(turn==="player"?"Player Phase":"Enemy Phase");if(awaitingPoisonTarget) phaseInfo.textContent="Poison Flask ready: click any enemy to halve their current HP."; else if(phase==="select")phaseInfo.textContent="Choose a blue unit to begin.";else if(phase==="move")phaseInfo.textContent="Move to a highlighted tile, or click your unit to skip movement.";else if(phase==="attack")phaseInfo.textContent="Attack an enemy, use a skill, or click an empty tile to end.";}
+function renderSkills(){const s=currentSelected(),enable=!!s&&turn==="player"&&phase==="attack"&&!awaitingPoisonTarget,has=skill=>s&&s.skills.includes(skill);skillNova.disabled=!(enable&&has("nova"));skillHeal.disabled=!(enable&&has("heal"));skillSnipe.disabled=!(enable&&has("snipe"));skillPower.disabled=!(enable&&has("power"));endAction.disabled=!enable;}
+function renderOverlay(){if(!winner){overlay.classList.remove("show");return;}overlay.classList.add("show");modalIcon.textContent=winner==="player"?"🏆":"💀";modalTitle.textContent=winner==="player"?"Victory":"Defeat";modalText.textContent=winner==="player"?"Your squad held the line." : "The enemy overwhelmed your team.";}
+function renderAll(){renderDialogue();renderLogs();renderUnits();renderCharCards();renderBoard();renderPhase();renderSkills();renderOverlay();}
+function showFx(icon){fxLayer.textContent=icon;fxLayer.classList.add("show");setTimeout(()=>fxLayer.classList.remove("show"),280);}
+function shakeUnit(id){const el=document.getElementById(`unit-${id}`);if(!el)return;el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake");setTimeout(()=>el.classList.remove("shake"),300);}
+function pulsePortrait(){portraitFrame.classList.remove("pulse");void portraitFrame.offsetWidth;portraitFrame.classList.add("pulse");setTimeout(()=>portraitFrame.classList.remove("pulse"),320);}
+function checkWinner(src){if(!alive("player",src).length)return"enemy";if(!alive("enemy",src).length)return"player";return null;}
+function finishPlayerAction(unitId,next){const acted=next.map(u=>u.id===unitId?{...u,acted:true}:u);units=acted;selectedId=null;phase="select";awaitingPoisonTarget=false;renderAll();const remaining=acted.some(u=>u.team==="player"&&u.hp>0&&!u.acted);if(!remaining){turn="enemy";maybeSpawnMidbattle();renderAll();setTimeout(enemyTurn,450);}}
+function collectItem(unit){
+  const item = itemAt(unit.x, unit.y);
+  if(!item) return;
+  items = items.filter(it=>!(it.x===unit.x && it.y===unit.y));
+  if(item.type==="healFull"){
+    units = units.map(u=>u.id===unit.id ? {...u, hp:u.maxHp} : u);
+    pushLog(`${unit.name} picked up a Full Heart and restored to full HP!`);
+    say(unit, "Yay~ full power again!", true);
+    showFx("💖"); beep("item");
+  }
+  if(item.type==="poisonHalf"){
+    inventory.poison = true;
+    awaitingPoisonTarget = true;
+    pushLog(`${unit.name} picked up a Poison Flask.`);
+    say(unit, "Oho~ tricky bottle acquired.", true);
+    showFx("🧪"); beep("item");
+  }
+}
+function usePoisonOn(enemyId){
+  const enemy = units.find(u=>u.id===enemyId);
+  if(!enemy || !inventory.poison) return;
+  const dmg = Math.max(1, Math.floor(enemy.hp * 0.5));
+  units = units.map(u=>u.id===enemyId ? {...u, hp:Math.max(0, u.hp - dmg)} : u);
+  inventory.poison = false;
+  awaitingPoisonTarget = false;
+  pushLog(`Poison Flask hit ${enemy.name} for ${dmg}, cutting 50% of current HP.`);
+  say(enemy, pickLine(enemy,"low") || "W-what was that?!", false);
+  showFx("🧪"); beep("skill"); shakeUnit(enemyId);
+  const w = checkWinner(units);
+  if(w){ winner = w; if(w==="player") beep("victory"); }
+}
+function performAttack(attackerId,defenderId,src,opts={}){const attacker=src.find(u=>u.id===attackerId),defender=src.find(u=>u.id===defenderId);if(!attacker||!defender)return src;let damage=opts.damage??(attacker.atk+(attacker.power?2:0));if(defender.guard)damage=Math.max(1,damage-2);const next=src.map(u=>u.id===defenderId?{...u,hp:Math.max(0,u.hp-damage)}:u);pushLog(`${attacker.name} hit ${defender.name} for ${damage}.`);say(attacker,pickLine(attacker,"attack") || opts.line || attacker.quotes.attack,attacker.team==="player");showFx(opts.fx||"⚔️");beep(opts.sound||"hit");shakeUnit(defenderId);pulsePortrait();const after=next.find(u=>u.id===defenderId);if(after&&after.hp===0){pushLog(`${defender.name} was defeated.`);say(defender,"...I fall...");}else if(after&&after.hp<=Math.ceil(after.maxHp*0.35)){say(defender,pickLine(defender,"low") || defender.quotes.hurt);}else{say(defender,defender.quotes.hurt);}const w=checkWinner(next);if(w){winner=w;if(w==="player"){beep("victory");const firstHero=next.find(u=>u.team==="player"&&u.hp>0);say(firstHero,pickLine(firstHero,"win") || "Yatta~ Victory!");}}return next;}
+function useSkill(skill){const s=currentSelected();if(!s||turn!=="player"||phase!=="attack"||awaitingPoisonTarget)return;let next=units;if(skill==="nova"){const targets=attackableEnemies(s,units,1);if(!targets.length)return pushLog("Star Nova needs an enemy within 2 tiles.");next=performAttack(s.id,targets[0].id,units,{damage:8,line:s.quotes.skill,fx:"✨",sound:"skill"});pushLog("Aria cast Star Nova.");}if(skill==="heal"){next=units.map(u=>u.id===s.id?{...u,hp:Math.min(u.maxHp,u.hp+6)}:u);pushLog("Aria restored 6 HP.");say(s,pickLine(s,"skill") || s.quotes.skill,true);showFx("💚");beep("heal");pulsePortrait();}if(skill==="snipe"){const targets=attackableEnemies(s,units,2);if(!targets.length)return pushLog("Moonshot Snipe needs an enemy within 4 tiles.");const target=targets.sort((a,b)=>a.hp-b.hp)[0];next=performAttack(s.id,target.id,units,{damage:9,line:s.quotes.skill,fx:"🏹",sound:"skill"});pushLog("Leon used Moonshot Snipe.");}if(skill==="power"){next=units.map(u=>u.id===s.id?{...u,power:true}:u);pushLog("Leon empowered his next strike.");say(s,pickLine(s,"skill") || "This ends now.",true);showFx("⚡");beep("skill");pulsePortrait();}units=next;renderAll();if(!checkWinner(next))finishPlayerAction(s.id,next);}
+function onTileClick(x,y){
+  beep("select");
+  if(winner||turn!=="player")return;
+  const tileUnit=getUnitAt(units,x,y);
+  if(awaitingPoisonTarget){
+    if(tileUnit && tileUnit.team==="enemy"){ usePoisonOn(tileUnit.id); renderAll(); }
+    return;
+  }
+  if(phase==="select"){if(tileUnit&&tileUnit.team==="player"&&!tileUnit.acted){selectedId=tileUnit.id;phase="move";say(tileUnit,tileUnit.quotes.select,true);pulsePortrait();renderAll();}return;}
+  const selected=currentSelected();if(!selected)return;
+  if(phase==="move"){
+    if(tileUnit&&tileUnit.id===selected.id){phase="attack";renderAll();return;}
+    const movable=movableSet();
+    if(movable.has(k(x,y))&&!tileUnit&&!terrainAt(x,y)){
+      units=units.map(u=>u.id===selected.id?{...u,x,y}:u);
+      const movedUnit = units.find(u=>u.id===selected.id);
+      collectItem(movedUnit);
+      phase="attack";pushLog(`${selected.name} moved.`);renderAll();
+    }
+    return;
+  }
+  if(phase==="attack"){
+    const refreshed=currentSelected(),possible=attackableEnemies(refreshed,units);
+    if(tileUnit&&tileUnit.team==="enemy"&&possible.some(u=>u.id===tileUnit.id)){units=performAttack(refreshed.id,tileUnit.id,units);renderAll();if(winner)return;finishPlayerAction(refreshed.id,units);}
+    else if(!tileUnit){pushLog(`${refreshed.name} ended action.`);finishPlayerAction(refreshed.id,units);}
+  }
+}
+function resetTurnFlags(src,team){return src.map(u=>u.team===team&&u.hp>0?{...u,acted:false,guard:false,power:false}:{...u,guard:false,power:false});}
+function enemyTurn(){pushLog("Enemy phase.");say(null,"The enemy side pushes forward.");units=resetTurnFlags(units,"enemy");renderAll();const enemies=alive("enemy",units);function step(i){if(i>=enemies.length){units=resetTurnFlags(units,"player");turn="player";phase="select";pushLog("Player phase.");say(null,"Your turn.");renderAll();return;}const enemy=units.find(u=>u.id===enemies[i].id&&u.hp>0);if(!enemy){setTimeout(()=>step(i+1),380);return;}let adjacent=attackableEnemies(enemy,units);if(adjacent.length){const target=adjacent.sort((a,b)=>a.hp-b.hp)[0];units=performAttack(enemy.id,target.id,units,{line:enemy.quotes.attack,fx:"⚔️",sound:"hit"});renderAll();if(winner)return;setTimeout(()=>step(i+1),420);return;}const target=nearestEnemy(enemy,units);if(target){const pos=moveToward(enemy,target,units);units=units.map(u=>u.id===enemy.id?{...u,x:pos.x,y:pos.y}:u);pushLog(`${enemy.name} advanced.`);const movedEnemy = units.find(u=>u.id===enemy.id);const item=itemAt(movedEnemy.x,movedEnemy.y);if(item && item.type==="healFull"){items=items.filter(it=>!(it.x===movedEnemy.x&&it.y===movedEnemy.y));units=units.map(u=>u.id===movedEnemy.id?{...u,hp:u.maxHp}:u);pushLog(`${movedEnemy.name} grabbed a Full Heart!`);beep("item");}renderAll();const me=units.find(u=>u.id===enemy.id);adjacent=attackableEnemies(me,units);if(adjacent.length){const t2=adjacent.sort((a,b)=>a.hp-b.hp)[0];units=performAttack(enemy.id,t2.id,units,{line:enemy.quotes.attack,fx:"⚔️",sound:"hit"});renderAll();if(winner)return;}}setTimeout(()=>step(i+1),420);}step(0);}
+function restartGame(){units=JSON.parse(JSON.stringify(initialUnits));turn="player";selectedId=null;phase="select";logs=["Battle start. Defeat both enemies.","Mid-battle drops now increase comeback potential and tactical swings."];winner=null;items=[];spawnStep=0;inventory={poison:false};awaitingPoisonTarget=false;say(null,"The skirmish begins.");renderAll();}
+toggleBgm.addEventListener("click",()=>{ if(bgmOn) stopBgm(); else startBgm(); });
+toggleMute.addEventListener("click",toggleMuteState);
+toggleAi.addEventListener("click",()=>{ aiMode=!aiMode; toggleAi.textContent = `AI Dialogue: ${aiMode ? "On" : "Off"}`; });
+skillNova.addEventListener("click",()=>useSkill("nova"));skillHeal.addEventListener("click",()=>useSkill("heal"));skillSnipe.addEventListener("click",()=>useSkill("snipe"));skillPower.addEventListener("click",()=>useSkill("power"));endAction.addEventListener("click",()=>{if(currentSelected()&&turn==="player"&&phase==="attack"&&!awaitingPoisonTarget)finishPlayerAction(currentSelected().id,units)});restartBtn.addEventListener("click",restartGame);playAgain.addEventListener("click",restartGame);restartGame();
+</script>
+</body>
+</html>
