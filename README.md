@@ -54,3 +54,7 @@ Built a small anime-inspired turn-based tactics prototype featuring dynamic dial
 
 ## Notes
 All portraits and assets in this demo are original and portfolio-safe.
+
+## 🎮 Live Demo
+
+Play here:  https://wqzhanglucky-coder.github.io/Celestial-tactics-demo/
